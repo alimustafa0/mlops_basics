@@ -1,0 +1,11 @@
+training:
+  epochs: 10
+  learning_rate: 0.001
+  batch_size: 32
+
+paths:
+  data_dir: data/
+  model_dir: models/
+  logs_dir: logs/
+
+environment: dev
