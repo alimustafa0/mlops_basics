@@ -1,6 +1,7 @@
 import os
 import yaml
 from pathlib import Path
+import shutil
 
 def load_config(path="config.yaml"):
     with open(path, "r") as f:
@@ -48,6 +49,33 @@ def evaluate_model(config):
 
 def save_artifacts(config):
     print("Saving model artifacts...")
+    
+    # Define our source (where the model was trained) 
+    # and destination (the 'vault' for our artifacts)
+    model_src = Path(config["paths"]["model_dir"]) / "model.bin"
+    artifact_dir = Path("artifacts")
+    artifact_dest = artifact_dir / "model_final.bin"
+
+    # 1. Create the artifact directory if it doesn't exist
+    artifact_dir.mkdir(exist_ok=True)
+
+    # 2. Idempotency Guard: If the final artifact already exists, don't move it again
+    if artifact_dest.exists():
+        print(f"Artifact {artifact_dest.name} already exists in the vault — skipping.")
+        return
+
+    # 3. Safety Check: Ensure the source model actually exists before trying to save it
+    if not model_src.exists():
+        raise FileNotFoundError(f"Missing source model at {model_src}. Did training fail?")
+
+    # 4. Atomic 'Save': Copy the model to the artifact vault
+    shutil.copy(model_src, artifact_dest)
+    
+    # 5. Metadata logging (Standard MLOps practice)
+    print(f"✅ Successfully saved model to {artifact_dest}")
+    with open(artifact_dir / "metadata.txt", "w") as f:
+        f.write(f"Environment: {config['environment']}\n")
+        f.write(f"Model Version: 1.0.0\n")
 
 def main():
     print("Pipeline started")
