@@ -5,7 +5,7 @@ import shutil
 import pandas as pd
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from data_monitor import log_data_stats
+import data_monitor
 
 def load_config(path="config.yaml"):
     with open(path, "r") as f:
@@ -29,7 +29,7 @@ def prepare_data(config):
     })
     
     # Call the monitor
-    log_data_stats(data)
+    data_monitor.log_data_stats(data)
     data_path = Path(config["paths"]["data_dir"])
     data_path.mkdir(exist_ok=True)
 
