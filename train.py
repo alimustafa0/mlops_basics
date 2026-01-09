@@ -2,6 +2,8 @@ import os
 import yaml
 from pathlib import Path
 import shutil
+import pandas as pd
+from data_monitor import log_data_stats
 
 def load_config(path="config.yaml"):
     with open(path, "r") as f:
@@ -18,6 +20,14 @@ def validate_config(config):
 
 def prepare_data(config):
     print("Preparing data...")
+    # Mocking data for this step - in reality, you'd load your CSV/SQL here
+    data = pd.DataFrame({
+        'feature_1': [10, 20, 30, 40],
+        'feature_2': [0.1, 0.2, 0.5, 0.1]
+    })
+    
+    # Call the monitor
+    log_data_stats(data)
     data_path = Path(config["paths"]["data_dir"])
     data_path.mkdir(exist_ok=True)
 
