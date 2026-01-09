@@ -5,7 +5,7 @@ on:
     branches: [ "master" ]
 
 jobs:
-  train:
+  train-and-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,8 +22,19 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run training
+      - name: Run training (Python)
         env:
           ENVIRONMENT: ci
         run: |
           python train.py
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t mlops-training:ci .
+
+      - name: Run Docker container
+        run: |
+          docker run --rm -e ENVIRONMENT=ci mlops-training:ci
