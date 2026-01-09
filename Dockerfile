@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 5. Copy project files
 COPY train.py config.yaml ./
+COPY utils/ ./utils/
 
 # 6. Default command
 CMD ["python", "train.py"]
