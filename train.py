@@ -3,7 +3,9 @@ import yaml
 from pathlib import Path
 import shutil
 import pandas as pd
-from data_monitor import log_data_stats
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from .data_monitor import log_data_stats
 
 def load_config(path="config.yaml"):
     with open(path, "r") as f:
