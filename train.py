@@ -3,6 +3,7 @@ import yaml
 from pathlib import Path
 import shutil
 import pandas as pd
+import numpy as np
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from utils.data_monitor import log_data_stats
@@ -58,6 +59,13 @@ def train_model(config):
 
 def evaluate_model(config):
     print("Evaluating model...")
+    
+    # SIMULATION: In a real app, this would be model.predict(test_data)
+    # Let's simulate 100 predictions between 0 and 1
+    predictions = np.random.rand(100)
+    
+    # Call our monitor
+    log_prediction_stats(predictions)
 
 def save_artifacts(config):
     print("Saving model artifacts...")
@@ -107,6 +115,30 @@ def detect_drift(current_stats, baseline_stats, threshold=0.2):
         print("✅ No significant drift detected")
 
     return drift_alerts
+
+def log_prediction_stats(predictions):
+    """Analyzes the model's output behavior."""
+    # Convert to numpy array if it isn't one already
+    preds = np.array(predictions)
+    
+    stats = {
+        "mean": float(np.mean(preds)),
+        "std": float(np.std(preds)),
+        "positive_rate": float(np.mean(preds > 0.5))
+    }
+
+    print(f"--- Prediction Monitoring ---")
+    print("PREDICTION_STATS:", stats)
+    
+    # Simple Threshold Alerting
+    if stats["positive_rate"] > 0.90:
+        print("⚠️ ALERT: Prediction Drift! Model is predicting 'Positive' almost 100% of the time.")
+    elif stats["positive_rate"] < 0.10:
+        print("⚠️ ALERT: Prediction Drift! Model is predicting 'Negative' almost 100% of the time.")
+    else:
+        print("✅ Prediction distribution looks healthy.")
+        
+    return stats
 
 def main():
     print("Pipeline started")
