@@ -7,6 +7,8 @@ import numpy as np
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from utils.data_monitor import log_data_stats
+from utils.prediction_monitor import log_prediction_stats
+from utils.alerting import send_alert
 
 def load_config(path="config.yaml"):
     with open(path, "r") as f:
@@ -65,7 +67,7 @@ def evaluate_model(config):
     predictions = np.random.rand(100)
     
     # Call our monitor
-    log_prediction_stats(predictions)
+    return log_prediction_stats(predictions)
 
 def save_artifacts(config):
     print("Saving model artifacts...")
@@ -110,35 +112,15 @@ def detect_drift(current_stats, baseline_stats, threshold=0.2):
             drift_alerts[feature] = change
 
     if drift_alerts:
-        print("⚠️ DRIFT DETECTED:", drift_alerts)
+        send_alert(
+        level="WARNING",
+        message="Input data drift detected in features",
+        context=drift_alerts
+        )
     else:
         print("✅ No significant drift detected")
 
     return drift_alerts
-
-def log_prediction_stats(predictions):
-    """Analyzes the model's output behavior."""
-    # Convert to numpy array if it isn't one already
-    preds = np.array(predictions)
-    
-    stats = {
-        "mean": float(np.mean(preds)),
-        "std": float(np.std(preds)),
-        "positive_rate": float(np.mean(preds > 0.5))
-    }
-
-    print(f"--- Prediction Monitoring ---")
-    print("PREDICTION_STATS:", stats)
-    
-    # Simple Threshold Alerting
-    if stats["positive_rate"] > 0.90:
-        print("⚠️ ALERT: Prediction Drift! Model is predicting 'Positive' almost 100% of the time.")
-    elif stats["positive_rate"] < 0.10:
-        print("⚠️ ALERT: Prediction Drift! Model is predicting 'Negative' almost 100% of the time.")
-    else:
-        print("✅ Prediction distribution looks healthy.")
-        
-    return stats
 
 def main():
     print("Pipeline started")
@@ -146,8 +128,8 @@ def main():
     validate_config(config)
     prepare_data(config)
     detect_drift(
-        current_stats={"mean": {"feature_1": 35, "feature_2": 0.15}},
-        baseline_stats={"mean": {"feature_1": 25, "feature_2": 0.2}},
+        current_stats={"mean": {"feature_1": 35, "feature_2": 0.2}},
+        baseline_stats={"mean": {"feature_1": 25, "feature_2": 0.4}},
         threshold=0.2
     )
     train_model(config)
