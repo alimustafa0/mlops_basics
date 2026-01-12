@@ -89,11 +89,35 @@ def save_artifacts(config):
         f.write(f"Environment: {config['environment']}\n")
         f.write(f"Model Version: 1.0.0\n")
 
+def detect_drift(current_stats, baseline_stats, threshold=0.2):
+    drift_alerts = {}
+
+    for feature, base_mean in baseline_stats["mean"].items():
+        current_mean = current_stats["mean"].get(feature)
+        if current_mean is None:
+            continue
+
+        change = abs(current_mean - base_mean) / base_mean
+        if change > threshold:
+            drift_alerts[feature] = change
+
+    if drift_alerts:
+        print("⚠️ DRIFT DETECTED:", drift_alerts)
+    else:
+        print("✅ No significant drift detected")
+
+    return drift_alerts
+
 def main():
     print("Pipeline started")
     config = load_config()
     validate_config(config)
     prepare_data(config)
+    detect_drift(
+        current_stats={"mean": {"feature_1": 35, "feature_2": 0.15}},
+        baseline_stats={"mean": {"feature_1": 25, "feature_2": 0.2}},
+        threshold=0.2
+    )
     train_model(config)
     evaluate_model(config)
     save_artifacts(config)
